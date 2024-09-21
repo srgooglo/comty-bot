@@ -13,6 +13,14 @@ const actions = {
     }
 }
 
+function hasAdmin(interaction) {
+    try {
+        return interaction.member.permissions.has("ADMINISTRATOR")
+    } catch (error) {
+        return false
+    }
+}
+
 export default {
     description: "Manage guild config",
     options: [
@@ -34,6 +42,13 @@ export default {
         }
     ],
     fn: async (interaction) => {
+        // check if user has the administrator permission
+        if (!hasAdmin(interaction)) {
+            return await interaction.reply("You don't have the administrator permission", {
+                ephemeral: true,
+            })
+        }
+
         const action = interaction.options.getString("action")
 
         if (!actions[action]) {
