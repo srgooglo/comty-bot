@@ -3,7 +3,4 @@ services:
     build: .
     restart: always
     ports:
-      - "5420:5420"
-    env_file:
-      - .env
-      
+      - "5420:5420"      
