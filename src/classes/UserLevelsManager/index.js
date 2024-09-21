@@ -63,9 +63,21 @@ export default class UserLevelManager {
     }
 
     // setters
-    updateLastInteraction = async (user_id, guild_id, interaction) => {
+    updateMessageLastInteraction = async (user_id, guild_id, interaction) => {
         await this.updateObj(user_id, guild_id, {
-            lastInteraction: {
+            lastMessageInteraction: {
+                date: new Date(),
+                type: interaction.type,
+                data: interaction.data,
+            },
+        })
+
+        return interaction
+    }
+
+    updateVoiceStateLastInteraction = async (user_id, guild_id, interaction) => {
+        await this.updateObj(user_id, guild_id, {
+            lastVoiceInteraction: {
                 date: new Date(),
                 type: interaction.type,
                 data: interaction.data,
@@ -108,5 +120,25 @@ export default class UserLevelManager {
         let level = await this.getObj(user_id, guild_id)
 
         return level.lastInteraction
+    }
+
+    getUserLevelIndex = async (user_id, guild_id) => {
+        let userLevels = await UserLevels.find({
+            guild_id,
+        })
+            .lean()
+
+        return userLevels.findIndex((userLevel) => userLevel.user_id === user_id)
+    }
+
+    getTopUserLevels = async (guild_id, limit = 10) => {
+        let topUserLevels = await UserLevels.find({
+            guild_id,
+        })
+            .sort({ points: -1 })
+            .limit(limit)
+            .lean()
+
+        return topUserLevels
     }
 }
