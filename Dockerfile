@@ -9,6 +9,8 @@ RUN apt install -y --no-install-recommends ffmpeg
 RUN apt install -y --no-install-recommends git
 RUN apt install -y --no-install-recommends ssh
 RUN apt install -y --no-install-recommends ca-certificates
+RUN apt install -y --no-install-recommends python3
+RUN apt install -y --no-install-recommends python3-pip
 
 # Create workdir
 RUN mkdir -p /app
