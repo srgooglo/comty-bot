@@ -1,5 +1,6 @@
 export default {
     notifyChannelId: null,
+    blacklistChannels: [],
     earnings: {
         invites: {
             enabled: true,
