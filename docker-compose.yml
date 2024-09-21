@@ -1,0 +1,9 @@
+services:
+  comty-bot:
+    build: .
+    restart: always
+    ports:
+      - "5420:5420"
+    env_file:
+      - .env
+      
