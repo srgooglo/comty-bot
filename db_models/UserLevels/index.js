@@ -18,9 +18,13 @@ export default {
             type: Number,
             default: 0,
         },
-        lastInteraction: {
+        lastMessageInteraction: {
             type: Object,
             default: null,
         },
+        lastVoiceInteraction: {
+            type: Object,
+            default: null,
+        }
     }
 }
