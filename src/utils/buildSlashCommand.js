@@ -16,7 +16,7 @@ export default (command) => {
                 console.error(`[Register Slash Command] Missing option type for command [${command.name}] option [${option.name}]`)
                 continue
             }
-            
+
             option.type = option.type.toUpperCase()
 
             if (!build[getOptionRegisterFn(option.type)]) {
@@ -45,6 +45,10 @@ export default (command) => {
 
                 if (optionBuilder.minValue) {
                     optionBuilder.setMinValue(option.minValue)
+                }
+
+                if (option.choices) {
+                    optionBuilder.addChoices(option.choices)
                 }
 
                 return optionBuilder
