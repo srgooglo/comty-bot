@@ -139,11 +139,11 @@ export default class UserLevelsFeature extends Feature {
 		}
 
 		// get target role
-		const targetRole = guildLevelsConfig.levels.find((level) => level.level === currentLevelObj.level).role
-		const excludedRoles = guildLevelsConfig.levels.filter((level) => level.level !== currentLevelObj.level).map(level => level.role)
+		const targetRoleId = guildLevelsConfig.levels.find((level) => level.level === currentLevelObj.level).role
+		const excludedRolesIds = guildLevelsConfig.levels.filter((level) => level.level !== currentLevelObj.level).map(level => level.role)
 
 		// remove excluded roles
-		for await (const roleId of excludedRoles) {
+		for await (const roleId of excludedRolesIds) {
 			if (userRoles.has(roleId)) {
 				this.console.info(`Removing [${member.user.tag}] the role ${roleId}`)
 				await member.roles.remove(roleId)
@@ -151,9 +151,9 @@ export default class UserLevelsFeature extends Feature {
 		}
 
 		// check if the user has the target role, if not, give him the role
-		if (!userRoles.has(targetRole.id)) {
-			this.console.info(`Giving [${member.user.tag}] the role > ${targetRole.name}`)
-			await member.roles.add(targetRole)
+		if (!userRoles.has(targetRoleId)) {
+			this.console.info(`Giving [${member.user.tag}] the role > ${targetRoleId}`)
+			await member.roles.add(targetRoleId)
 		}
 	}
 
