@@ -94,7 +94,7 @@ export default class UserLevelsFeature extends Feature {
 			)
 			const userData = await this.bot.client.users.fetch(user_id)
 
-			const userLevelRank = await this.userLevelManager.getUserLevelIndex(user_id, guild_id)
+			const userLevelRank = await this.userLevelManager.getUserLevelRank(user_id, guild_id)
 
 			currentLevelObj.rank = userLevelRank
 

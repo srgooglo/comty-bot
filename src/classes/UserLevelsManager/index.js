@@ -122,10 +122,11 @@ export default class UserLevelManager {
         return level.lastInteraction
     }
 
-    getUserLevelIndex = async (user_id, guild_id) => {
+    getUserLevelRank = async (user_id, guild_id) => {
         let userLevels = await UserLevels.find({
             guild_id,
         })
+            .sort({ points: -1 })
             .lean()
 
         return userLevels.findIndex((userLevel) => userLevel.user_id === user_id)
