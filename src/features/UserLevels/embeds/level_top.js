@@ -11,7 +11,7 @@ export default (topUserLevels, embed) => {
 
     embed = embed
         .setColor("#FF6064")
-        .setDescription("# 🏆 Top 10 users")
+        .setDescription("# 🏆 Top 7 users")
 
     embed.addFields([
         {
@@ -30,6 +30,8 @@ export default (topUserLevels, embed) => {
             inline: true,
         },
     ])
+
+    topUserLevels = topUserLevels.splice(0, 7)
 
     topUserLevels.forEach((userLevel, index) => {
         embed.addFields([
