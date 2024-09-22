@@ -22,6 +22,10 @@ async function readFilesFn(from) {
 }
 
 export default async (listenersPath, collection) => {
+    if (!fs.existsSync(listenersPath)) {
+        return collection
+    }
+
     const listenersEventsNames = fs.readdirSync(listenersPath)
 
     for await (const eventName of listenersEventsNames) {

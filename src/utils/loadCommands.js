@@ -2,6 +2,10 @@ import fs from "node:fs"
 import path from "node:path"
 
 export default async (commandsPath, collection) => {
+    if (!fs.existsSync(commandsPath)) {
+        return collection
+    }
+
     const commandsName = fs.readdirSync(commandsPath)
 
     for await (const commandName of commandsName) {
