@@ -123,7 +123,15 @@ export default class UserLevelsFeature extends Feature {
 			guildLevelsConfig.levels,
 		)
 
+		const username = member.user.tag
+
+		this.console.info(`[${username}] > Current level: ${targetLevel.level}`)
+		this.console.info(`[${username}] > Current points: ${currentLevelObj.points}`)
+		this.console.info(`[${username}] > Target level: ${targetLevel.level}`)
+
 		if (currentLevelObj.level !== targetLevel.level) {
+			this.console.info(`Updating [${member.user.tag}] level to ${targetLevel.level}`)
+
 			currentLevelObj.level = targetLevel.level
 
 			await this.userLevelManager.updateLevel(

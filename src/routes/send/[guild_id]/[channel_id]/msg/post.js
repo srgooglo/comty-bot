@@ -1,5 +1,5 @@
 export default {
-    useContext: ["discord"],
+    useContext: ["bot"],
     fn: async (req) => {
         throw new OperationError(501, "Not implemented")
 
@@ -10,7 +10,7 @@ export default {
             throw new OperationError(400, "No message content provided")
         }
 
-        const guild = await this.default.contexts.discord.client.guilds.fetch(guild_id)
+        const guild = await this.default.contexts.bot.client.guilds.fetch(guild_id)
 
         if (!guild) {
             throw new OperationError(404, "Guild not found")

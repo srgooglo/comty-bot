@@ -11,7 +11,7 @@ class API extends Server {
 
     contexts = {
         db: new DbManager(),
-        discord: new Bot({
+        bot: new Bot({
             client_id: process.env.DISCORD_CLIENT_ID,
             token: process.env.DISCORD_BOT_TOKEN,
             private: process.env.DISCORD_PRIVATE_TOKEN,
@@ -20,13 +20,13 @@ class API extends Server {
 
     async onInitialize() {
         await this.contexts.db.initialize()
-        await this.contexts.discord.initialize()
+        await this.contexts.bot.initialize()
     }
 
     onClose() {
         console.log("Shutting down...")
 
-        this.contexts.discord.destroy()
+        this.contexts.bot.destroy()
     }
 }
 
