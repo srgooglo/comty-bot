@@ -20,7 +20,7 @@ export default (guildLevelsConfig, userLevelObj, userData, embed) => {
 		})
 		.setDescription(
 			`<@&${previusLevelConfig.role}> **→** <@&${levelConfig.role}>\n
-			You are now the **#${userLevelObj.rank + 1}** in the leaderboard\n
+			You are the **#${userLevelObj.rank + 1}** in the leaderboard\n
 			`,
 		)
 		.setThumbnail(`https://cdn.discordapp.com/avatars/${userLevelObj.user_id}/${userData.avatar}.png?size=256`)
