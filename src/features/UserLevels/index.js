@@ -124,6 +124,8 @@ export default class UserLevelsFeature extends Feature {
 		)
 
 		if (currentLevelObj.level !== targetLevel.level) {
+			currentLevelObj.level = targetLevel.level
+
 			await this.userLevelManager.updateLevel(
 				user_id,
 				guild_id,
@@ -143,12 +145,14 @@ export default class UserLevelsFeature extends Feature {
 		// remove excluded roles
 		for await (const roleId of excludedRoles) {
 			if (userRoles.has(roleId)) {
+				this.console.info(`Removing [${member.user.tag}] the role ${roleId}`)
 				await member.roles.remove(roleId)
 			}
 		}
 
 		// check if the user has the target role, if not, give him the role
 		if (!userRoles.has(targetRole.id)) {
+			this.console.info(`Giving [${member.user.tag}] the role > ${targetRole.name}`)
 			await member.roles.add(targetRole)
 		}
 	}
