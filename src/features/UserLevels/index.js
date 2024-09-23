@@ -118,13 +118,17 @@ export default class UserLevelsFeature extends Feature {
 		const guild = await this.bot.client.guilds.fetch(guild_id)
 		const member = await guild.members.fetch(user_id)
 
+		const username = member.user.tag
+
+		this.console.info(`[${username}] > Handling next level...`)
+
 		let targetLevel = getTargetLevelFromPoints(
 			currentLevelObj.points,
 			guildLevelsConfig.levels,
 		)
 
-		const username = member.user.tag
-
+		this.console.info(`[${username}] > User level obj >`)
+		console.log(currentLevelObj)
 		this.console.info(`[${username}] > Current level: ${targetLevel.level}`)
 		this.console.info(`[${username}] > Current points: ${currentLevelObj.points}`)
 		this.console.info(`[${username}] > Target level: ${targetLevel.level}`)
