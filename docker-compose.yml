@@ -3,4 +3,6 @@ services:
     build: .
     restart: always
     ports:
-      - "5420:5420"      
+      - "5420:5420"
+    volumes:
+      - ./custom-commands:/app/commands
