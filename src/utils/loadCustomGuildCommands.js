@@ -5,7 +5,7 @@ import path from "node:path"
 import fs from "node:fs"
 
 export default async (dir, guildsCommandsCollection) => {
-    if (!fs.statSync(dir).isDirectory()) {
+    if (!fs.existsSync(dir)) {
         return guildsCommandsCollection
     }
 
