@@ -289,6 +289,11 @@ export default class UserLevelsFeature extends Feature {
 	}
 
 	async handleOnGuildMemberAdd(member) {
+		// if member is a bot then ignore
+		if (member.user.bot) {
+			return
+		}
+
 		await this.handleNextLevel(member.user.id, member.guild.id)
 	}
 
