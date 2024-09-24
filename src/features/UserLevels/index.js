@@ -350,9 +350,7 @@ export default class UserLevelsFeature extends Feature {
 			})
 		},
 		"earnings": async (interaction) => {
-			return await interaction.reply("Not implemented yet", {
-				ephemeral: true,
-			})
+			return await interaction.reply({ content: "This command is not implemented yet", ephemeral: true })
 		}
 	}
 }
