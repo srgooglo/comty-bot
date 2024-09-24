@@ -3,7 +3,7 @@
   "productName": "Comty™ Discord App",
   "author": "RageStudio",
   "icon": "https://storage.ragestudio.net/rstudio/branding/comty/iso/basic-alt.svg",
-  "version": "0.6.7",
+  "version": "0.6.8",
   "license": "MIT",
   "scripts": {
     "start": "linebridge-boot ./src/index.js"

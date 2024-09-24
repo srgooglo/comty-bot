@@ -7,22 +7,30 @@ export default class GuildLevelsConfigCache {
 
     cache = new Map()
 
-    get = async (guild_id) => {
+    get = async (guild_id, key) => {
+        let config = null
+
         if (this.cache.has(guild_id)) {
-            return this.cache.get(guild_id)
+            config = this.cache.get(guild_id)
+        } else {
+            let guildConfig = await GuildLevelsConfig.findOne({
+                guild_id,
+            })
+
+            if (!guildConfig) {
+                guildConfig = await this.setDefault(guild_id)
+            }
+
+            this.cache.set(guild_id, guildConfig.config)
+
+            config = guildConfig.config
         }
 
-        let guildConfig = await GuildLevelsConfig.findOne({
-            guild_id,
-        })
-
-        if (!guildConfig) {
-            guildConfig = await this.setDefault(guild_id)
+        if (key) {
+            return config[key]
         }
 
-        this.cache.set(guild_id, guildConfig.config)
-
-        return guildConfig.config
+        return config
     }
 
     setDefault = async (guild_id) => {

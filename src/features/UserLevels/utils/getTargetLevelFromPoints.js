@@ -1,12 +1,16 @@
 export default (currentPoints, levelsList) => {
-    console.log(`[FILTER] Searching target level for ${currentPoints} points on list >`, levelsList)
+    // sort levels ascending from lower
+    levelsList = levelsList.sort((a, b) => a.points - b.points)
 
-    let filtered = levelsList.filter((obj) => obj.points <= currentPoints)
+    console.log(`[FILTER] Searching target level for [${currentPoints}] points on list >`, levelsList)
 
-    // filter levels ascending from lower
-    filtered = filtered.sort((a, b) => a.points - b.points)
+    levelsList = levelsList.filter((obj) => obj.points <= currentPoints)
 
-    console.log(`[FILTER] Filtered levels >`, filtered)
+    console.log(`[FILTER] Filtered levels >`, levelsList)
 
-    return filtered[filtered.length - 1]
+    const targetLevel = levelsList[levelsList.length - 1]
+
+    console.log(`[FILTER] Target level >`, targetLevel)
+
+    return targetLevel
 }

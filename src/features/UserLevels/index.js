@@ -36,7 +36,7 @@ export default class UserLevelsFeature extends Feature {
 						{
 							name: "top",
 							value: "top",
-							description: "Get the top 10 users in the leaderboard",
+							description: "Get the top 7 users in the leaderboard",
 						},
 						{
 							name: "sync",
@@ -47,6 +47,11 @@ export default class UserLevelsFeature extends Feature {
 							name: "list",
 							value: "list",
 							description: "Get the list of available levels",
+						},
+						{
+							name: "earnings",
+							value: "earnings",
+							description: "List all the earnings you can earn",
 						}
 					],
 				}
@@ -65,9 +70,19 @@ export default class UserLevelsFeature extends Feature {
 	]
 
 	userLevelManager = new UserLevelManager()
-	guildsConfigCache = new GuildLevelsConfigCache({
+	levelsConfigCache = new GuildLevelsConfigCache({
 		defaultConfig: DEFAULT_FEATURE_CONFIG,
 	})
+
+	getUserLevels = async (user_id, guild_id) => {
+		const guildLevelsConfig = await this.levelsConfigCache.get(guild_id)
+
+		if (!guildLevelsConfig || !Array.isArray(guildLevelsConfig.levels)) {
+			return []
+		}
+
+		return guildLevelsConfig.levels.sort((a, b) => a.level - b.level)
+	}
 
 	getUserRoles = async (user_id, guild_id) => {
 		const guild = await this.bot.client.guilds.fetch(guild_id)
@@ -85,20 +100,18 @@ export default class UserLevelsFeature extends Feature {
 	}
 
 	onLevelUp = async (user_id, guild_id, currentLevelObj) => {
-		const guildLevelsConfig = await this.guildsConfigCache.get(guild_id)
+		const notifyChannelId = await this.levelsConfigCache.get(guild_id, "notifyChannelId")
 
 		// if notifyChannelId exist, post a message in the channel
-		if (guildLevelsConfig.notifyChannelId) {
-			const channel = await this.bot.client.channels.fetch(
-				guildLevelsConfig.notifyChannelId,
-			)
+		if (notifyChannelId) {
+			const channel = await this.bot.client.channels.fetch(notifyChannelId)
 			const userData = await this.bot.client.users.fetch(user_id)
 
 			const userLevelRank = await this.userLevelManager.getUserLevelRank(user_id, guild_id)
 
 			currentLevelObj.rank = userLevelRank
 
-			let embed = buildLevelUpEmbed(guildLevelsConfig, currentLevelObj, userData)
+			let embed = buildLevelUpEmbed(getUserLevels, currentLevelObj, userData)
 
 			await channel.send({
 				content: `<@${user_id}>`,
@@ -110,49 +123,51 @@ export default class UserLevelsFeature extends Feature {
 
 	handleNextLevel = async (user_id, guild_id) => {
 		const userRoles = await this.getUserRoles(user_id, guild_id)
-		const guildLevelsConfig = await this.guildsConfigCache.get(guild_id)
-		const currentLevelObj = await this.userLevelManager.getObj(
+		const guildLevels = await this.levelsConfigCache.get(guild_id, "levels")
+		const userLevelObj = await this.userLevelManager.getObj(
 			user_id,
 			guild_id,
 		)
+
 		const guild = await this.bot.client.guilds.fetch(guild_id)
 		const member = await guild.members.fetch(user_id)
-
 		const username = member.user.tag
 
 		this.console.info(`[${username}] > Handling next level...`)
 
-		let targetLevel = getTargetLevelFromPoints(
-			currentLevelObj.points,
-			guildLevelsConfig.levels,
+		console.log(`GUILD levels >`, guildLevels)
+
+		let targetLevelObj = getTargetLevelFromPoints(
+			userLevelObj.points,
+			guildLevels,
 		)
 
-		this.console.info(`[${username}] > User level obj >`)
-		console.log(currentLevelObj)
-		this.console.info(`[${username}] > Current level: ${targetLevel.level}`)
-		this.console.info(`[${username}] > Current points: ${currentLevelObj.points}`)
-		this.console.info(`[${username}] > Target level: ${targetLevel.level}`)
+		this.console.info(`[${username}] > Current level: ${targetLevelObj.level}`)
+		this.console.info(`[${username}] > Current points: ${userLevelObj.points}`)
+		this.console.info(`[${username}] > Target level: ${targetLevelObj.level}`)
 
-		if (currentLevelObj.level !== targetLevel.level) {
-			this.console.info(`Updating [${member.user.tag}] level to ${targetLevel.level}`)
+		if (userLevelObj.level !== targetLevelObj.level) {
+			this.console.info(`Updating [${member.user.tag}] level to ${targetLevelObj.level}`)
 
-			currentLevelObj.level = targetLevel.level
+			userLevelObj.level = targetLevelObj.level
 
 			await this.userLevelManager.updateLevel(
 				user_id,
 				guild_id,
-				targetLevel.level,
+				targetLevelObj.level,
 			)
 
 			await this.onLevelUp(user_id, guild_id, {
-				...currentLevelObj,
-				level: targetLevel.level,
+				...userLevelObj,
+				level: targetLevelObj.level,
 			})
+		} else {
+			this.console.info(`[${username}] is already at the target level, no update required`)
 		}
 
 		// get target role
-		const targetRoleId = guildLevelsConfig.levels.find((level) => level.level === currentLevelObj.level).role
-		const excludedRolesIds = guildLevelsConfig.levels.filter((level) => level.level !== currentLevelObj.level).map(level => level.role)
+		const targetRoleId = guildLevels.find((level) => level.level === userLevelObj.level).role
+		const excludedRolesIds = guildLevels.filter((level) => level.level !== userLevelObj.level).map(level => level.role)
 
 		// remove excluded roles
 		for await (const roleId of excludedRolesIds) {
@@ -175,7 +190,7 @@ export default class UserLevelsFeature extends Feature {
 			return false
 		}
 
-		let guildLevelsConfig = await this.guildsConfigCache.get(message.guild.id)
+		let guildLevelsConfig = await this.levelsConfigCache.get(message.guild.id)
 
 		// check if the channel is blacklisted
 		if (Array.isArray(guildLevelsConfig.blacklistChannels)) {
@@ -283,21 +298,7 @@ export default class UserLevelsFeature extends Feature {
 	// COMMANDS HANDLERS
 	commands = {
 		default: async (interaction) => {
-			const action = interaction.options.getString("action")
-
-			if (action === "sync") {
-				return this.handleLevelStateSyncCommand(interaction)
-			}
-
-			if (action === "top") {
-				return this.handleLevelTopCommand(interaction)
-			}
-
-			if (action === "list") {
-				return this.handleLevelListCommand(interaction)
-			}
-
-			const guildLevelsConfig = await this.guildsConfigCache.get(
+			const guildLevelsConfig = await this.levelsConfigCache.get(
 				interaction.guild.id,
 			)
 			const levelObj = await this.userLevelManager.getObj(
@@ -337,12 +338,17 @@ export default class UserLevelsFeature extends Feature {
 			})
 		},
 		"list": async (interaction) => {
-			const guildLevelsConfig = await this.guildsConfigCache.get(interaction.guild.id)
+			const guildLevelsConfig = await this.levelsConfigCache.get(interaction.guild.id)
 
 			const embed = buildLevelListEmbed(guildLevelsConfig, null)
 
 			await interaction.reply({
 				embeds: [embed],
+				ephemeral: true,
+			})
+		},
+		"earnings": async (interaction) => {
+			return await interaction.reply("Not implemented yet", {
 				ephemeral: true,
 			})
 		}
