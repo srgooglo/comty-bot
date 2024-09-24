@@ -74,14 +74,10 @@ export default class UserLevelsFeature extends Feature {
 		defaultConfig: DEFAULT_FEATURE_CONFIG,
 	})
 
-	getUserLevels = async (user_id, guild_id) => {
-		const guildLevelsConfig = await this.levelsConfigCache.get(guild_id)
+	getGuildLevels = async (guild_id) => {
+		let guildLevels = await this.levelsConfigCache.get(guild_id, "levels") ?? []
 
-		if (!guildLevelsConfig || !Array.isArray(guildLevelsConfig.levels)) {
-			return []
-		}
-
-		return guildLevelsConfig.levels.sort((a, b) => a.level - b.level)
+		return guildLevels.sort((a, b) => a.level - b.level)
 	}
 
 	getUserRoles = async (user_id, guild_id) => {
@@ -101,6 +97,7 @@ export default class UserLevelsFeature extends Feature {
 
 	onLevelUp = async (user_id, guild_id, currentLevelObj) => {
 		const notifyChannelId = await this.levelsConfigCache.get(guild_id, "notifyChannelId")
+		const guildLevels = await this.getGuildLevels(guild_id)
 
 		// if notifyChannelId exist, post a message in the channel
 		if (notifyChannelId) {
@@ -111,7 +108,7 @@ export default class UserLevelsFeature extends Feature {
 
 			currentLevelObj.rank = userLevelRank
 
-			let embed = buildLevelUpEmbed(getUserLevels, currentLevelObj, userData)
+			let embed = buildLevelUpEmbed(guildLevels, currentLevelObj, userData)
 
 			await channel.send({
 				content: `<@${user_id}>`,
@@ -123,7 +120,7 @@ export default class UserLevelsFeature extends Feature {
 
 	handleNextLevel = async (user_id, guild_id) => {
 		const userRoles = await this.getUserRoles(user_id, guild_id)
-		const guildLevels = await this.levelsConfigCache.get(guild_id, "levels")
+		const guildLevels = await this.getGuildLevels(guild_id)
 		const userLevelObj = await this.userLevelManager.getObj(
 			user_id,
 			guild_id,

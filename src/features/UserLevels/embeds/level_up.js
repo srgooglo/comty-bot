@@ -1,6 +1,6 @@
 import { EmbedBuilder } from "discord.js"
 
-export default (guildLevelsConfig, userLevelObj, userData, embed) => {
+export default (levels, userLevelObj, userData, embed) => {
 	if (!userLevelObj) {
 		throw new Error("Missing `userLevelObj`")
 	}
@@ -9,8 +9,8 @@ export default (guildLevelsConfig, userLevelObj, userData, embed) => {
 		embed = new EmbedBuilder()
 	}
 
-	const levelConfig = guildLevelsConfig.levels.find(level => level.level === userLevelObj.level)
-	const previusLevelConfig = guildLevelsConfig.levels[levelConfig.level - 1] ?? guildLevelsConfig.levels[0]
+	const levelConfig = levels.find(level => level.level === userLevelObj.level)
+	const previusLevelConfig = levels[levelConfig.level - 1] ?? levels.levels[0]
 
 	embed = embed
 		.setColor("#FF6064")
