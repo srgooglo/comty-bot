@@ -1,6 +1,6 @@
 import { Routes } from "discord.js"
 
-export default async (commands, rest, client_id) => {
+export default async (commands, rest, client_id, guild_id) => {
     if (!commands) {
         throw new Error("Missing commands")
     }
@@ -13,16 +13,28 @@ export default async (commands, rest, client_id) => {
         throw new Error("Missing client_id")
     }
 
-    const slashCommandsJSON = commands.map((command) => {
+    // filter commands with no slash property
+    commands = commands.filter((command) => command.slash)
+
+    const commandsJson = commands.map((command) => {
         return command.slash.toJSON()
     })
 
-    await rest.put(
-        Routes.applicationCommands(client_id),
-        {
-            body: slashCommandsJSON
-        }
-    )
+    if (typeof guild_id === "string") {
+        await await rest.put(
+            Routes.applicationGuildCommands(client_id, guild_id),
+            {
+                body: commandsJson
+            }
+        )
+    } else {
+        await rest.put(
+            Routes.applicationCommands(client_id),
+            {
+                body: commandsJson
+            }
+        )
+    }
 
-    return slashCommandsJSON
+    return commandsJson
 }

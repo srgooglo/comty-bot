@@ -10,9 +10,9 @@ import {
 
 import registerSlashCommands from "@utils/registerSlashCommands"
 import loadCommands from "@utils/loadCommands"
-import loadSlashCommands from "@utils/loadSlashCommands"
 import loadListeners from "@utils/loadListeners"
 import buildSlashCommand from "@utils/buildSlashCommand"
+import loadCustomGuildCommands from "@utils/loadCustomGuildCommands"
 import Logger from "@classes/Logger"
 
 import BotFeatures from "src/features"
@@ -45,6 +45,7 @@ export default class Bot {
         })
     })
 
+    customCommands = new Collection()
     commands = new Collection()
     eventListeners = new Collection()
     features = new Collection()
@@ -112,11 +113,20 @@ export default class Bot {
             return false
         }
 
-        const command = this.commands.get(interaction.commandName)
+        let command = this.commands.get(interaction.commandName)
+
+        if (!command) {
+            if (this.customCommands.has(interaction.guildId)) {
+                const guildCommands = this.customCommands.get(interaction.guildId)
+
+                command = guildCommands.get(interaction.commandName)
+            }
+        }
 
         if (!command) {
             await interaction.reply({ content: "Cannot find that command", ephemeral: true })
-            return
+
+            return null
         }
 
         try {
@@ -151,12 +161,15 @@ export default class Bot {
     }
 
     async initialize() {
-        // load commands
-        this.commands = await loadCommands(path.join(process.cwd(), "commands"), this.commands)
+        await this.rest.setToken(this.auth.token)
+
+        // load built in commands & custom commands
+        this.commands = await loadCommands(path.join(__dirname, "..", "..", "built-in", "commands"), this.commands)
         this.logger.info(`Loaded [${this.commands.size}] commands...`)
 
-        this.commands = await loadSlashCommands(this.commands)
-        this.logger.info(`Loaded [${this.commands.size}] slash commands...`)
+        // load custom commands
+        this.customCommands = await loadCustomGuildCommands(path.join(process.cwd(), "commands"), this.customCommands)
+        this.logger.info(`Loaded [${this.customCommands.size}] custom commands...`)
 
         // load listeners
         this.eventListeners = await loadListeners(path.join(process.cwd(), "listeners"), this.eventListeners)
@@ -180,13 +193,18 @@ export default class Bot {
             this.client.on(event, buildEventHandler(listener.bind(this)))
         })
 
+        // register slash commands
+        this.logger.info(`Registering [${this.commands.size}] slash commands...`)
+        await registerSlashCommands(this.commands, this.rest, this.auth.client_id)
+
+        // register custom slash commands
+        for await (const [guildId, guildCommands] of this.customCommands.entries()) {
+            this.logger.info(`Registering [${guildCommands.size}] custom slash commands for guild [${guildId}]...`)
+            await registerSlashCommands(guildCommands, this.rest, this.auth.client_id, guildId)
+        }
+
         // login
         await this.client.login(this.auth.token)
-        await this.rest.setToken(this.auth.token)
-
-        // register slash commands
-        const slashCommandsJSON = await registerSlashCommands(this.commands, this.rest, this.auth.client_id)
-        this.logger.info(`Registered [${slashCommandsJSON.length}] slash commands...`)
     }
 
     async destroy() {

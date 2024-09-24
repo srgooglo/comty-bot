@@ -1,6 +1,8 @@
 import fs from "node:fs"
 import path from "node:path"
 
+import buildSlashCommand from "@utils/buildSlashCommand"
+
 export default async (commandsPath, collection) => {
     if (!fs.existsSync(commandsPath)) {
         return collection
@@ -16,6 +18,8 @@ export default async (commandsPath, collection) => {
         commandObj = commandObj.default ?? commandObj
 
         commandObj.name = commandName
+
+        commandObj.slash = await buildSlashCommand(commandObj)
 
         collection.set(commandName, commandObj)
     }
